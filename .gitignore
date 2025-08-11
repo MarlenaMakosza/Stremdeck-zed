@@ -1,2 +1,5 @@
 node_modules
 zed/node_modules
+zed/com.lenerystia.zed.sdPlugin/logs
+zed/com.lenerystia.zed.sdPlugin/bin
+zed/.vscode
