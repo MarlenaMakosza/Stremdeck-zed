@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(node zed-server.js)",
+      "Bash(powershell:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": []
+  }
+}

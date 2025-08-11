@@ -1,0 +1,93 @@
+{
+	"Name": "Zed",
+	"Version": "0.1.0.0",
+	"Author": "Lenerystia",
+	"Actions": [
+		{
+			"Name": "Counter",
+			"UUID": "com.lenerystia.zed.increment",
+			"Icon": "imgs/actions/counter/icon",
+			"Tooltip": "Displays a count, which increments by one on press.",
+			"PropertyInspectorPath": "ui/increment-counter.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/counter/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "Terminal",
+			"UUID": "com.lenerystia.zed.terminal",
+			"Icon": "imgs/actions/terminal/icon",
+			"Tooltip": "Toggle terminal in Zed editor.",
+			"PropertyInspectorPath": "ui/terminal.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/terminal/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "Build",
+			"UUID": "com.lenerystia.zed.build",
+			"Icon": "imgs/actions/build/icon",
+			"Tooltip": "Build project in Zed editor.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/build/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		},
+		{
+			"Name": "New Window",
+			"UUID": "com.lenerystia.zed.newwindow",
+			"Icon": "imgs/actions/newwindow/icon",
+			"Tooltip": "Open a new Zed window.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/newwindow/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		}
+	],
+	"Category": "Zed",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "Enables Stream Deck integration with Zed.",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.5"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.lenerystia.zed"
+}

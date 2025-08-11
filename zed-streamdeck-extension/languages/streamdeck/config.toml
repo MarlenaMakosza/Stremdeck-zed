@@ -1,0 +1,4 @@
+name = "StreamDeck Config"
+grammar = "streamdeck"
+path_suffixes = ["sdconfig.json", ".streamdeck"]
+line_comments = ["//"]

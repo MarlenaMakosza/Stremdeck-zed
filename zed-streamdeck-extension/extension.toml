@@ -1,0 +1,23 @@
+id = "streamdeck-integration"
+name = "Stream Deck Integration"
+version = "0.1.0"
+schema_version = 1
+authors = ["Lenerystia <lenerystia@gmail.com>"]
+description = "Enables Stream Deck integration with Zed editor"
+repository = "https://github.com/lenerystia/zed-streamdeck-extension"
+
+[slash_commands.terminal]
+description = "Toggle terminal panel"
+requires_argument = false
+
+[slash_commands.build]
+description = "Build current project"
+requires_argument = false
+
+[slash_commands.run]
+description = "Run current project"
+requires_argument = false
+
+[slash_commands.new_window]
+description = "Open a new Zed window"
+requires_argument = false
