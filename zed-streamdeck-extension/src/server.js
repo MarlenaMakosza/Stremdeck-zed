@@ -202,69 +202,31 @@ const server = http.createServer((req, res) => {
             if (path) {
               console.log(`[PROJECT] Attempting to open: ${path}`);
               
-              // Różne podejścia dla Windows
-              let command;
-              if (IS_WINDOWS) {
-                // Użyj zmiennej środowiskowej dla uniwersalności
-                const zedPath = `${process.env.LOCALAPPDATA}\\Programs\\Zed Nightly\\bin\\zed.exe`;
-                // Alternatywnie: const zedPath = require('path').join(process.env.LOCALAPPDATA, 'Programs', 'Zed Nightly', 'bin', 'zed.exe');
-                
-                // Normalizuj ścieżkę - zamień / na \
-                const normalizedPath = path.replace(/\//g, '\\');
-                command = `"${zedPath}" "${normalizedPath}"`;
-              } else {
-                command = `zed "${path}"`;
-              }
-              
-              console.log(`[PROJECT] Running command: ${command}`);
-              
-              // Użyj spawn zamiast exec dla lepszej kontroli
+              // Użyj spawn dla lepszej kontroli
               const { spawn } = require('child_process');
               
               if (IS_WINDOWS) {
-                // Dla Windows użyj spawn z shell: false
+                // Dla Windows - normalizuj ścieżkę
                 const normalizedPath = path.replace(/\//g, '\\');
-                // Uniwersalna ścieżka używająca zmiennej środowiskowej
-                const zedExePath = `${process.env.LOCALAPPDATA}\\Programs\\Zed Nightly\\bin\\zed.exe`;
                 
-                // Sprawdź czy Zed istnieje w tej lokalizacji
-                const fs = require('fs');
-                if (!fs.existsSync(zedExePath)) {
-                  console.error(`[PROJECT] Zed not found at: ${zedExePath}`);
-                  // Spróbuj znaleźć w PATH jako fallback
-                  console.log(`[PROJECT] Trying 'zed' from PATH as fallback`);
-                  exec(`zed "${normalizedPath}"`, (error) => {
-                    if (error) {
-                      sendResponse(res, {
-                        status: "error",
-                        error: `Zed not found. Expected at: ${zedExePath}`,
-                        path: normalizedPath,
-                      });
-                    } else {
-                      sendResponse(res, {
-                        status: "ok",
-                        action: "project_opened_via_path",
-                        path: normalizedPath,
-                      });
-                    }
-                  });
-                  return;
-                }
+                // Po prostu użyj 'zed' z PATH - jest tam dodany podczas instalacji
+                console.log(`[PROJECT] Using 'zed' from PATH`);
+                console.log(`[PROJECT] Opening project: ${normalizedPath}`);
                 
                 const zedProcess = spawn(
-                  zedExePath,
+                  'zed',  // Użyj zed z PATH
                   [normalizedPath],
                   { 
                     detached: true,
                     stdio: 'ignore',
-                    shell: false
+                    shell: false,
+                    windowsHide: true  // Ukryj okno konsoli na Windows
                   }
                 );
                 
                 zedProcess.unref(); // Pozwól procesowi działać niezależnie
                 
                 console.log(`[PROJECT] Spawned Zed process with PID: ${zedProcess.pid}`);
-                console.log(`[PROJECT] Opening project: ${normalizedPath}`);
                 
                 // Daj chwilę na start procesu
                 setTimeout(() => {
@@ -277,24 +239,30 @@ const server = http.createServer((req, res) => {
                 }, 500);
                 
               } else {
-                // Dla innych systemów użyj exec
-                exec(command, { shell: true }, (error, stdout, stderr) => {
-                  if (error) {
-                    console.error(`[PROJECT] Error:`, error);
-                    sendResponse(res, {
-                      status: "error",
-                      error: error.message,
-                      path,
-                    });
-                  } else {
-                    console.log(`[PROJECT] Success!`);
-                    sendResponse(res, {
-                      status: "ok",
-                      action: "project_opened",
-                      path,
-                    });
+                // Dla macOS/Linux też użyj spawn
+                const zedProcess = spawn(
+                  'zed',
+                  [path],
+                  { 
+                    detached: true,
+                    stdio: 'ignore',
+                    shell: false
                   }
-                });
+                );
+                
+                zedProcess.unref();
+                
+                console.log(`[PROJECT] Spawned Zed process with PID: ${zedProcess.pid}`);
+                console.log(`[PROJECT] Opening project: ${path}`);
+                
+                setTimeout(() => {
+                  sendResponse(res, {
+                    status: "ok",
+                    action: "project_opened",
+                    path,
+                    pid: zedProcess.pid
+                  });
+                }, 500);
               }
             } else {
               console.error(`[PROJECT] No path provided in request`);
