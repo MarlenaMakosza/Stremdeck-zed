@@ -205,8 +205,10 @@ const server = http.createServer((req, res) => {
               // Różne podejścia dla Windows
               let command;
               if (IS_WINDOWS) {
-                // Spróbuj bezpośrednio wywołać zed.exe z pełną ścieżką
-                const zedPath = "C:\\Users\\Lenerystia\\AppData\\Local\\Programs\\Zed Nightly\\bin\\zed.exe";
+                // Użyj zmiennej środowiskowej dla uniwersalności
+                const zedPath = `${process.env.LOCALAPPDATA}\\Programs\\Zed Nightly\\bin\\zed.exe`;
+                // Alternatywnie: const zedPath = require('path').join(process.env.LOCALAPPDATA, 'Programs', 'Zed Nightly', 'bin', 'zed.exe');
+                
                 // Normalizuj ścieżkę - zamień / na \
                 const normalizedPath = path.replace(/\//g, '\\');
                 command = `"${zedPath}" "${normalizedPath}"`;
@@ -222,8 +224,35 @@ const server = http.createServer((req, res) => {
               if (IS_WINDOWS) {
                 // Dla Windows użyj spawn z shell: false
                 const normalizedPath = path.replace(/\//g, '\\');
+                // Uniwersalna ścieżka używająca zmiennej środowiskowej
+                const zedExePath = `${process.env.LOCALAPPDATA}\\Programs\\Zed Nightly\\bin\\zed.exe`;
+                
+                // Sprawdź czy Zed istnieje w tej lokalizacji
+                const fs = require('fs');
+                if (!fs.existsSync(zedExePath)) {
+                  console.error(`[PROJECT] Zed not found at: ${zedExePath}`);
+                  // Spróbuj znaleźć w PATH jako fallback
+                  console.log(`[PROJECT] Trying 'zed' from PATH as fallback`);
+                  exec(`zed "${normalizedPath}"`, (error) => {
+                    if (error) {
+                      sendResponse(res, {
+                        status: "error",
+                        error: `Zed not found. Expected at: ${zedExePath}`,
+                        path: normalizedPath,
+                      });
+                    } else {
+                      sendResponse(res, {
+                        status: "ok",
+                        action: "project_opened_via_path",
+                        path: normalizedPath,
+                      });
+                    }
+                  });
+                  return;
+                }
+                
                 const zedProcess = spawn(
-                  "C:\\Users\\Lenerystia\\AppData\\Local\\Programs\\Zed Nightly\\bin\\zed.exe",
+                  zedExePath,
                   [normalizedPath],
                   { 
                     detached: true,
