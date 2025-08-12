@@ -15,6 +15,20 @@
           "TitleAlignment": "middle"
         }
       ]
+    },
+    {
+      "Name": "Open Project",
+      "UUID": "com.lenerystia.zed.openproject",
+      "Icon": "imgs/actions/openproject/icon",
+      "Tooltip": "Open a specific project in Zed.",
+      "PropertyInspectorPath": "ui/project-inspector.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/openproject/key",
+          "TitleAlignment": "middle"
+        }
+      ]
     }
   ],
   "Category": "Zed",

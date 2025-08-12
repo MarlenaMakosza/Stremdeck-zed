@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Open Project Settings</title>
+    <style>
+        body {
+            background: #2d2d2d;
+            color: #dcddde;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 15px;
+        }
+        
+        .setting-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        
+        input, button {
+            width: 100%;
+            padding: 8px;
+            background: #3a3a3a;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #0078ff;
+        }
+        
+        button {
+            background: #0078ff;
+            border-color: #0078ff;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        button:hover {
+            background: #0066dd;
+        }
+        
+        .help-text {
+            font-size: 10px;
+            color: #888;
+            margin-top: 3px;
+        }
+        
+        .browse-btn {
+            background: #4a4a4a;
+            border-color: #666;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        
+        .browse-btn:hover {
+            background: #555;
+        }
+        
+        .quick-projects {
+            display: grid;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .quick-project {
+            background: #3a3a3a;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            text-align: left;
+        }
+        
+        .quick-project:hover {
+            background: #4a4a4a;
+            border-color: #0078ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Nazwa projektu (tytuł przycisku) -->
+    <div class="setting-group">
+        <label for="projectName">Project Name (Button Title)</label>
+        <input type="text" id="projectName" placeholder="My Project">
+        <div class="help-text">Name displayed on the Stream Deck button</div>
+    </div>
+
+    <!-- Ścieżka do projektu -->
+    <div class="setting-group">
+        <label for="projectPath">Project Path</label>
+        <input type="text" id="projectPath" placeholder="C:\Users\YourName\Projects\MyProject">
+        <button class="browse-btn" onclick="browseFolder()">📁 Browse Folder</button>
+        <div class="help-text">Full path to your project directory</div>
+    </div>
+
+    <!-- Quick Projects (często używane projekty) -->
+    <div class="setting-group">
+        <label>Quick Select</label>
+        <div class="quick-projects" id="quickProjects">
+            <!-- Dynamically filled -->
+        </div>
+    </div>
+
+    <!-- URL serwera (zaawansowane) -->
+    <div class="setting-group">
+        <label for="serverUrl">Server URL (Advanced)</label>
+        <input type="text" id="serverUrl" placeholder="http://localhost:21422" value="http://localhost:21422">
+        <div class="help-text">Zed server address (usually default)</div>
+    </div>
+
+    <script>
+        // Stream Deck WebSocket connection
+        let websocket = null;
+        let uuid = null;
+        let actionInfo = {};
+        let settings = {};
+
+        // Quick projects - często używane ścieżki
+        const quickProjects = [
+            { name: "Documents", path: "C:\\Users\\%USERNAME%\\Documents" },
+            { name: "Desktop", path: "C:\\Users\\%USERNAME%\\Desktop" },
+            { name: "Projects", path: "C:\\Users\\%USERNAME%\\Projects" },
+            { name: "Source", path: "C:\\Users\\%USERNAME%\\Source" },
+            { name: "Downloads", path: "C:\\Users\\%USERNAME%\\Downloads" }
+        ];
+
+        // Połączenie ze Stream Deck
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            actionInfo = JSON.parse(inActionInfo);
+            settings = actionInfo.payload.settings;
+
+            websocket = new WebSocket('ws://localhost:' + inPort);
+
+            websocket.onopen = function() {
+                const json = {
+                    "event": inRegisterEvent,
+                    "uuid": uuid
+                };
+                websocket.send(JSON.stringify(json));
+                loadSettings();
+                populateQuickProjects();
+            };
+
+            websocket.onmessage = function(evt) {
+                const jsonObj = JSON.parse(evt.data);
+                if (jsonObj.event === 'didReceiveSettings') {
+                    settings = jsonObj.payload.settings;
+                    loadSettings();
+                }
+            };
+        }
+
+        // Załaduj ustawienia do UI
+        function loadSettings() {
+            if (settings.projectName !== undefined) {
+                document.getElementById('projectName').value = settings.projectName;
+            }
+            if (settings.projectPath !== undefined) {
+                document.getElementById('projectPath').value = settings.projectPath;
+            }
+            if (settings.serverUrl !== undefined) {
+                document.getElementById('serverUrl').value = settings.serverUrl;
+            }
+        }
+
+        // Zapisz ustawienia
+        function saveSettings() {
+            settings.projectName = document.getElementById('projectName').value;
+            settings.projectPath = document.getElementById('projectPath').value;
+            settings.serverUrl = document.getElementById('serverUrl').value;
+
+            const json = {
+                "event": "setSettings",
+                "context": uuid,
+                "payload": settings
+            };
+            
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify(json));
+            }
+        }
+
+        // Event listeners
+        document.getElementById('projectName').addEventListener('input', saveSettings);
+        document.getElementById('projectPath').addEventListener('input', saveSettings);
+        document.getElementById('serverUrl').addEventListener('input', saveSettings);
+
+        // Populuj quick projects
+        function populateQuickProjects() {
+            const container = document.getElementById('quickProjects');
+            container.innerHTML = '';
+            
+            quickProjects.forEach(project => {
+                const button = document.createElement('div');
+                button.className = 'quick-project';
+                button.textContent = `📁 ${project.name}`;
+                button.onclick = () => selectQuickProject(project);
+                container.appendChild(button);
+            });
+        }
+
+        // Wybierz quick project
+        function selectQuickProject(project) {
+            const expandedPath = project.path.replace('%USERNAME%', getUsername());
+            document.getElementById('projectPath').value = expandedPath;
+            document.getElementById('projectName').value = project.name;
+            saveSettings();
+        }
+
+        // Pobierz username (simplifikowane)
+        function getUsername() {
+            return 'Lenerystia'; // Możesz to rozszerzyć
+        }
+
+        // Browse folder (mockup - w rzeczywistości Stream Deck nie ma file dialoga)
+        function browseFolder() {
+            alert('Pro tip: Copy the full path from Windows Explorer and paste it into the Project Path field!');
+        }
+
+        // Auto-fill project name based on path
+        document.getElementById('projectPath').addEventListener('input', function() {
+            const path = this.value;
+            const nameField = document.getElementById('projectName');
+            
+            // Jeśli nazwa jest pusta, wypełnij ją na podstawie folderu
+            if (!nameField.value && path) {
+                const folderName = path.split(/[\\\/]/).pop();
+                if (folderName) {
+                    nameField.value = folderName;
+                    saveSettings();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

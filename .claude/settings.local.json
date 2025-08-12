@@ -6,7 +6,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(node zed-server.js)",
       "Bash(powershell:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:zed.dev)"
     ],
     "deny": []
   }
