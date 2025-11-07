@@ -1,3 +1,11 @@
+# NOTE
+
+This project is being developed primarily with AI support. Any help with improving the code is welcome!
+
+# NOTE #2
+
+I don't promise that all functionalities, even those described in the readme, will work.
+
 # Zed Stream Deck Integration
 
 Control Zed editor from your Stream Deck!
