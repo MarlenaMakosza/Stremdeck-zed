@@ -115,3 +115,7 @@ case '/your/action':
 
 2. Rebuild plugin: `npm run build`
 3. Restart Stream Deck
+
+## 👩‍💻 Author
+
+Made by [Marlena Makosza](https://marlenamakosza.com)
